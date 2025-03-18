@@ -17,3 +17,21 @@ variable "service_account_id" {
   type        = string
   description = "Client service account id."
 }
+
+variable "castai_role_permissions" {
+  description = "A set of permissions that will be granted to CAST AI role used by central system"
+  type        = list(string)
+  default     = []
+}
+
+variable "compute_manager_permissions" {
+  description = "A set of permissions that will be granted to compute manager role"
+  type        = list(string)
+  default     = []
+}
+
+variable "compute_manager_project_ids" {
+  type        = list(string)
+  description = "Projects list for shared sole tenancy nodes"
+  default     = []
+}
