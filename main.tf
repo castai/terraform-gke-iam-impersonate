@@ -5,7 +5,6 @@ locals {
 data "castai_gke_user_policies" "gke" {
   features = [
     for feature in [
-        var.enable_load_balancers_network_endpoint_group_permissions ? "load_balancers_network_endpoint_group" : null,
         var.enable_load_balancers_target_backend_pools_permissions ? "load_balancers_target_backend_pools" : null,
         var.enable_load_balancers_unmanaged_instance_groups_permissions ? "load_balancers_unmanaged_instance_groups" : null
     ] : feature if feature != null

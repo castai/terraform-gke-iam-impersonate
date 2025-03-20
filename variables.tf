@@ -35,9 +35,3 @@ variable "enable_load_balancers_target_backend_pools_permissions" {
   type        = bool
   default     = false
 }
-
-variable "enable_load_balancers_network_endpoint_group_permissions" {
-  description = "Enable or disable GKE load balancer network endpoint group permissions"
-  type        = bool
-  default     = false
-}
