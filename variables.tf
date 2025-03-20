@@ -18,20 +18,26 @@ variable "service_account_id" {
   description = "Client service account id."
 }
 
-variable "castai_role_permissions" {
-  description = "A set of permissions that will be granted to CAST AI role used by central system"
-  type        = list(string)
-  default     = []
-}
-
-variable "compute_manager_permissions" {
-  description = "A set of permissions that will be granted to compute manager role"
-  type        = list(string)
-  default     = []
-}
-
 variable "compute_manager_project_ids" {
   type        = list(string)
   description = "Projects list for shared sole tenancy nodes"
   default     = []
+}
+
+variable "enable_load_balancers_unmanaged_instance_groups_permissions" {
+  description = "Enable or disable GKE load balancer unmanaged instance groups permissions"
+  type        = bool
+  default     = false
+}
+
+variable "enable_load_balancers_target_backend_pools_permissions" {
+  description = "Enable or disable GKE load balancer target backend pools permissions"
+  type        = bool
+  default     = false
+}
+
+variable "enable_load_balancers_network_endpoint_group_permissions" {
+  description = "Enable or disable GKE load balancer network endpoint group permissions"
+  type        = bool
+  default     = false
 }

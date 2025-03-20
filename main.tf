@@ -2,7 +2,15 @@ locals {
   compute_manager_project_ids = var.compute_manager_project_ids
 }
 
-data "castai_gke_user_policies" "gke" {}
+data "castai_gke_user_policies" "gke" {
+  features = [
+    for feature in [
+        var.enable_load_balancers_network_endpoint_group_permissions ? "load_balancers_network_endpoint_group" : null,
+        var.enable_load_balancers_target_backend_pools_permissions ? "load_balancers_target_backend_pools" : null,
+        var.enable_load_balancers_unmanaged_instance_groups_permissions ? "load_balancers_unmanaged_instance_groups" : null
+    ] : feature if feature != null
+  ]
+}
 
 data "google_project" "project" {
   project_id = var.project_id
@@ -18,7 +26,7 @@ resource "google_project_iam_custom_role" "castai_role" {
   role_id     = "castai.gkeAccess.${substr(sha1(var.cluster_name), 0, 8)}.tf"
   title       = "Role to manage GKE cluster via CAST AI"
   description = "Role to manage GKE cluster via CAST AI"
-  permissions = length(var.castai_role_permissions) == 0 ? toset(data.castai_gke_user_policies.gke.policy) : setunion(var.castai_role_permissions, toset(data.castai_gke_user_policies.gke.policy))
+  permissions = data.castai_gke_user_policies.gke.policy
   project     = var.project_id
   stage       = "GA"
 }
@@ -31,7 +39,7 @@ resource "google_project_iam_custom_role" "compute_manager_role" {
   role_id     = "castai.gkeAccess.${substr(sha1(each.key), 0, 8)}.tf"
   title       = "Role to manage GKE compute resources via CAST AI"
   description = "Role to manage GKE compute resources via CAST AI"
-  permissions = length(var.compute_manager_permissions) == 0 ? toset(data.castai_gke_user_policies.gke.policy) : setunion(var.compute_manager_permissions, toset(data.castai_gke_user_policies.gke.policy))
+  permissions = data.castai_gke_user_policies.gke.policy
   stage       = "GA"
 }
 
