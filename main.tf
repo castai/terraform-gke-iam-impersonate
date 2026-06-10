@@ -9,10 +9,6 @@ data "castai_gke_user_policies" "gke" {
   }
 }
 
-data "google_project" "project" {
-  project_id = var.project_id
-}
-
 resource "google_service_account" "client_service_account" {
   account_id   = var.service_account_id
   display_name = "Service account to manage ${var.cluster_name} cluster via CAST"
@@ -42,8 +38,8 @@ resource "google_project_iam_custom_role" "compute_manager_role" {
 
 resource "google_project_iam_binding" "compute_manager_binding" {
   project = var.project_id
-  role    = "projects/${var.project_id}/roles/castai.gkeAccess.${substr(sha1(var.cluster_name), 0, 8)}.tf"
-  members = ["serviceAccount:${google_service_account.client_service_account.email}"]
+  role    = google_project_iam_custom_role.castai_role.name
+  members = [google_service_account.client_service_account.member]
 }
 
 # Configure GKE cluster and obtain the castai service account.
@@ -52,8 +48,6 @@ resource "castai_gke_cluster_id" "cluster_id" {
   location               = var.cluster_region
   project_id             = var.project_id
   client_service_account = google_service_account.client_service_account.email
-  # DO NOT UNCOMMENT: cast service account will be computed and filled after apply.
-  # cast_service_account   = "to-be-computed"
 }
 
 # Grant the roles/iam.serviceAccountTokenCreator role to the CASTAI_SERVICE_ACCOUNT
@@ -61,12 +55,6 @@ resource "google_service_account_iam_member" "token_creator_binding" {
   service_account_id = google_service_account.client_service_account.name
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = "serviceAccount:${castai_gke_cluster_id.cluster_id.cast_service_account}"
-
-  condition {
-    title       = "AlwaysTrueCondition"
-    description = "This condition is always true"
-    expression  = "true"
-  }
 
   depends_on = [castai_gke_cluster_id.cluster_id]
 }
@@ -86,11 +74,11 @@ resource "google_service_account_iam_member" "impersonation_user_binding" {
   depends_on = [castai_gke_cluster_id.cluster_id]
 }
 
-# Grant the roles/iam.serviceAccountUser role to the CLIENT_SERVICE_ACCOUNT without.
+# Grant the roles/iam.serviceAccountUser role to the CLIENT_SERVICE_ACCOUNT
 resource "google_project_iam_member" "service_account_user" {
   project = var.project_id
   role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:${google_service_account.client_service_account.email}"
+  member  = google_service_account.client_service_account.member
 }
 
 // service_account
